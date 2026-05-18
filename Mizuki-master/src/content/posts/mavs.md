@@ -32,7 +32,7 @@ draft: false
 作为一人一城的终极代表，德克在达拉斯坚守了 21 个赛季。在 2011 年，德克率领着不被外界看好的牛仔们，一路掀翻各路豪强，夺得了队史首座、也是最具含金量的一座总冠军奖杯。
 
 ### 🎥 经典回顾：2011年独行侠夺冠震撼纪录片
-<iframe width="100%" height="468" src="//player.bilibili.com/player.html?bvid=BV1fK4y1s7Qf&p=1&autoplay=0" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+<iframe width="100%" height="468" src="//player.bilibili.com/player.html?bvid=BV1UK411p7SU&p=1&autoplay=0" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
 
 ---
 
@@ -43,7 +43,7 @@ draft: false
 现在的独行侠，拥有着全联盟最灵动、最不可思议的后场大师——**凯里·欧文（Kyrie Irving）**。他用一次次华丽的变向、极限的拉杆和不讲理的绝杀，重新让美航中心球馆（American Airlines Center）彻底沸腾。他不仅继承了牛仔的坚韧，更注入了现代篮球的极致技巧美学。
 
 ### 🎥 高光时刻：欧文极致运球与绝杀艺术
-<iframe width="100%" height="468" src="//player.bilibili.com/player.html?bvid=BV19p4y1B7vE&p=1&autoplay=0" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+<iframe width="100%" height="468" src="//player.bilibili.com/player.html?bvid=BV1hz94YzEmA&p=1&autoplay=0" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
 
 ---
 
