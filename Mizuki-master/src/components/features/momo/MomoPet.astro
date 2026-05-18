@@ -1,0 +1,182 @@
+---
+// src/components/features/momo/MomoPet.astro
+// 重构版：基于本地图片精灵的像素黑猫墨墨，支持生动的眼神跟随、自动眨眼和投喂动作
+---
+
+<div
+	id="momo-container"
+	class="fixed bottom-5 left-5 z-50 flex items-end gap-2 select-none group"
+>
+	<div
+		id="momo-speech"
+		class="absolute -top-16 left-0 bg-[#1a1a1a] text-[#facc15] text-[11px] px-3 py-2 rounded-lg border-2 border-[#facc15] shadow-[0_4px_10px_rgba(0,0,0,0.5)] opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-[60]"
+	>
+		喵呜~
+	</div>
+
+	<div
+		class="relative w-[64px] h-[80px] bg-no-repeat cursor-pointer transition-transform duration-100 ease-out active:scale-90"
+		id="momo-cat"
+		style="background-image: url('/momo_sprite.png'); image-rendering: pixelated;"
+	>
+	</div>
+
+	<button
+		id="feed-btn"
+		class="bg-[#262626] hover:bg-[#333] text-white text-xs px-2.5 py-1.5 rounded border-2 border-[#404040] hover:border-[#facc15] transition-all active:scale-95 flex items-center gap-1 shadow-lg"
+	>
+		<span class="text-sm">🐟</span>
+		<span class="text-[10px] font-bold tracking-tighter">投喂</span>
+	</button>
+</div>
+
+<script>
+	const setupMomo = () => {
+		const container = document.getElementById("momo-container");
+		const cat = document.getElementById("momo-cat");
+		const feedBtn = document.getElementById("feed-btn");
+		const speechBox = document.getElementById("momo-speech");
+
+		if (!cat || !speechBox) return;
+
+		// 1. 定义像素精灵图的帧坐标 (background-position)
+		// 根据你的 10x4 精灵图，单帧 64x80
+		const frames = {
+			idle: "0px 0px", // 静止 (第一行第一列)
+			blink: "-64px 0px", // 眨眼 (第一行第二列)
+			look: {
+				center: "-128px 0px", // 眼神正中
+				left: "-192px 0px", // 眼神左视
+				upLeft: "-256px 0px", // 眼神上左
+				up: "-320px 0px", // 眼神上视
+				upRight: "-384px 0px", // 眼神上右
+				right: "-448px 0px", // 眼神右视
+				downRight: "-512px 0px", // 眼神下右
+				down: "-576px 0px", // 眼神下视
+				downLeft: "0px -80px", // 眼神下左
+			},
+			eat: "-64px -80px", // 吃鱼动作帧 (第二行第二列)
+		};
+
+		let isEating = false;
+		let blinkTimer: any = null;
+		let speechTimeout: any = null;
+
+		// 2. 眼神精准跟随光标算法 (基于帧切换)
+		window.addEventListener("mousemove", (e) => {
+			if (isEating) return;
+			const rect = cat.getBoundingClientRect();
+			const centerX = rect.left + rect.width / 2;
+			const centerY = rect.top + rect.height / 2;
+
+			const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+			const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
+
+			// 距离太远（例如超过400px），猫咪眼神回到正中
+			if (dist > 400) {
+				cat.style.backgroundPosition = frames.look.center;
+				return;
+			}
+
+			// 根据角度范围，切换对应的眼神帧 (8个扇区)
+			let pos = frames.look.center;
+			if (angle >= -Math.PI / 8 && angle < Math.PI / 8)
+				pos = frames.look.right; // 0°
+			else if (angle >= Math.PI / 8 && angle < (3 * Math.PI) / 8)
+				pos = frames.look.downRight; // 45°
+			else if (angle >= (3 * Math.PI) / 8 && angle < (5 * Math.PI) / 8)
+				pos = frames.look.down; // 90°
+			else if (angle >= (5 * Math.PI) / 8 && angle < (7 * Math.PI) / 8)
+				pos = frames.look.downLeft; // 135°
+			else if (angle >= (7 * Math.PI) / 8 || angle < (-7 * Math.PI) / 8)
+				pos = frames.look.left; // 180°
+			else if (angle >= (-7 * Math.PI) / 8 && angle < (-5 * Math.PI) / 8)
+				pos = frames.look.upLeft; // -135°
+			else if (angle >= (-5 * Math.PI) / 8 && angle < (-3 * Math.PI) / 8)
+				pos = frames.look.up; // -90°
+			else if (angle >= (-3 * Math.PI) / 8 && angle < -Math.PI / 8)
+				pos = frames.look.upRight; // -45°
+
+			cat.style.backgroundPosition = pos;
+		});
+
+		// 3. 自动眨眼逻辑 (基于帧切换)
+		const blink = () => {
+			if (isEating) return;
+			cat.style.backgroundPosition = frames.blink;
+			setTimeout(() => {
+				if (!isEating) cat.style.backgroundPosition = frames.idle;
+			}, 150); // 眨眼持续 150ms
+			blinkTimer = setTimeout(blink, 3000 + Math.random() * 3000); // 3-6秒内再次眨眼
+		};
+		// 延迟2秒开始首次眨眼
+		setTimeout(blink, 2000);
+
+		// 4. 投喂小鱼干触发特殊对话 & 吃鱼动画
+		const dialogues = [
+			"喵~ 这个像素小鱼干太棒啦！BUG全吃掉！",
+			"能量满满！代码写得真利落🏀",
+			"咕噜咕噜...喜欢被摸'墨墨'猫头牌~",
+			"贴贴主人！祝你 CET-6 考试一次满分过！",
+			"猫咪墨墨在此！来把那个前端新特性写写嘛~",
+		];
+
+		const triggerSpeech = (text?: string) => {
+			const randomText =
+				text || dialogues[Math.floor(Math.random() * dialogues.length)];
+			speechBox.innerText = randomText;
+			speechBox.style.opacity = "1";
+
+			if (speechTimeout) clearTimeout(speechTimeout);
+			speechTimeout = setTimeout(() => {
+				speechBox.style.opacity = "0";
+			}, 4000); // 4秒后气泡自动消失
+		};
+
+		// 投喂按钮逻辑
+		feedBtn?.addEventListener("click", () => {
+			if (isEating) return;
+			isEating = true;
+			triggerSpeech();
+
+			// 1. 切换到吃鱼动画帧
+			cat.style.backgroundPosition = frames.eat;
+			// 2. 模拟咀嚼：轻微上下震动
+			cat.style.transform = "translateY(-2px)";
+
+			// 2000ms后完成吃鱼动作，切换回静止帧
+			setTimeout(() => {
+				cat.style.transform = "translateY(0px)";
+				cat.style.backgroundPosition = frames.idle;
+				isEating = false;
+			}, 2000);
+		});
+
+		// 鼠标摸摸猫咪本体
+		cat?.addEventListener("click", () =>
+			triggerSpeech("呼噜呼噜...喜欢被摸头~"),
+		);
+	};
+
+	// 兼容 Astro 的平滑路由切换
+	document.addEventListener("astro:page-load", setupMomo);
+</script>
+
+<style>
+	/* 核心修复：强制像素化渲染，防止浏览器平滑处理使其模糊 */
+	#momo-cat {
+		/* 精灵图路径 */
+		background-image: url("/momo_sprite.png");
+
+		/* [核心]：强制像素化渲染，在大屏幕下保持清晰边缘 */
+		image-rendering: pixelated;
+
+		/* [进阶]：精确核对单帧比例：64x80 */
+		width: 64px;
+		height: 80px;
+
+		/* 确保精灵图不被意外拉伸 */
+		background-size: 640px 320px; /* 精灵图总尺寸：10x64 by 4x80 */
+		background-repeat: no-repeat;
+	}
+</style>
