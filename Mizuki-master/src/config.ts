@@ -224,15 +224,17 @@ export const siteConfig: SiteConfig = {
 			enableCompress: false,
 		},
 
-		cjkFont: {
-			fontFamily: "Noto Serif SC", // 网页识别的字体名
-			fontWeight: "400",
-			localFonts: [
-				"NotoSerif-Regular.otf", // 确保文件名和你本地一致
-				"NotoSerif-Bold.otf",
-			],
-			enableCompress: true,
-		},
+	cjkFont: {
+        fontFamily: "Noto Serif SC",
+        fontWeight: "400",
+        localFonts: [
+            "NotoSerifSC-Regular.ttf", // ⚠️ 必须和实际文件名一字不差
+            "NotoSerifSC-Bold.ttf",    // ⚠️ 必须和实际文件名一字不差
+        ],
+        // 既然你实际用的是 .ttf 格式而不是 .otf，
+        // 那么官方的字体压缩功能就可以完美支持了，可以直接把它设为 true！
+        enableCompress: true, 
+    },
 	},
 	showLastModified: true, // 控制"上次编辑"卡片显示的开关
 	pageProgressBar: {
