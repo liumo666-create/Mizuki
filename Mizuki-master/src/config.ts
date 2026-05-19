@@ -24,10 +24,10 @@ import { LinkPreset } from "./types/config";
 const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
 const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
 export const siteConfig: SiteConfig = {
-	title: "Mizuki",
-	subtitle: "One demo website",
-	siteURL: "https://mizuki.mysqil.com/", // 请替换为你的站点URL，以斜杠结尾
-	siteStartDate: "2025-01-01", // 站点开始运行日期，用于站点统计组件计算运行天数
+	title: "传奇薯条吞噬者的菠萝屋",
+	subtitle: "",
+	siteURL: "https://fanyouhao.top//", // 请替换为你的站点URL，以斜杠结尾
+	siteStartDate: "2026-05-18", // 站点开始运行日期，用于站点统计组件计算运行天数
 
 	timeZone: SITE_TIMEZONE,
 
@@ -109,7 +109,7 @@ export const siteConfig: SiteConfig = {
 	// 标签样式配置
 	tagStyle: {
 		// 是否使用新样式（悬停高亮样式）还是旧样式（外框常亮样式）
-		useNewStyle: false,
+		useNewStyle: true,
 	},
 
 	// 壁纸模式配置
@@ -121,7 +121,7 @@ export const siteConfig: SiteConfig = {
 		// "mobile" = 仅在移动端显示
 		// "desktop" = 仅在桌面端显示
 		// "both" = 在所有设备上显示
-		showModeSwitchOnMobile: "desktop",
+		showModeSwitchOnMobile: "both",
 	},
 
 	banner: {
@@ -224,17 +224,17 @@ export const siteConfig: SiteConfig = {
 			enableCompress: false,
 		},
 
-	cjkFont: {
-        fontFamily: "Noto Serif SC",
-        fontWeight: "400",
-        localFonts: [
-            "NotoSerifSC-Regular.ttf", // ⚠️ 必须和实际文件名一字不差
-            "NotoSerifSC-Bold.ttf",    // ⚠️ 必须和实际文件名一字不差
-        ],
-        // 既然你实际用的是 .ttf 格式而不是 .otf，
-        // 那么官方的字体压缩功能就可以完美支持了，可以直接把它设为 true！
-        enableCompress: true, 
-    },
+		cjkFont: {
+			fontFamily: "Noto Serif SC",
+			fontWeight: "400",
+			localFonts: [
+				"NotoSerifSC-Regular.ttf", // ⚠️ 必须和实际文件名一字不差
+				"NotoSerifSC-Bold.ttf", // ⚠️ 必须和实际文件名一字不差
+			],
+			// 既然你实际用的是 .ttf 格式而不是 .otf，
+			// 那么官方的字体压缩功能就可以完美支持了，可以直接把它设为 true！
+			enableCompress: true,
+		},
 	},
 	showLastModified: true, // 控制"上次编辑"卡片显示的开关
 	pageProgressBar: {
