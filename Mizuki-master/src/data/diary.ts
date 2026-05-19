@@ -10,15 +10,14 @@ export interface DiaryItem {
 	mood?: string;
 	tags?: string[];
 }
-
+//
 // 示例日记数据
 const diaryData: DiaryItem[] = [
 	{
 		id: 1,
-		content:
-			"The falling speed of cherry blossoms is five centimeters per second!",
-		date: "2025-01-15T10:30:00Z",
-		images: ["/images/diary/sakura.jpg", "/images/diary/1.webp"],
+		content: "今日文班亚马爆砍41分，将卫冕冠军雷霆打得毫无还手之力。",
+		date: "2026-05-19T19:57:00Z",
+		images: ["/images/diary/wenban1.png"],
 	},
 ];
 

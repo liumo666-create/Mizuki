@@ -14,24 +14,46 @@ export type DeviceCategory = Record<string, Device[]> & {
 };
 
 export const devicesData: DeviceCategory = {
-	OnePlus: [
+	Phone: [
 		{
-			name: "OnePlus 13T",
-			image: "/images/device/oneplus13t.webp",
-			specs: "Gray / 16G + 1TB",
+			name: "VIVO X200 Pro",
+			image: "/images/device/x200pro.png",
+			specs: "White / 16G + 512G",
 			description:
-				"Flagship performance, Hasselblad imaging, 80W SuperVOOC.",
-			link: "https://www.oneplus.com/cn/13t",
+				"ZEISS Image. Go Far..",
+			link: "https://www.vivo.com/en/products/x200-pro",
 		},
 	],
-	Router: [
+	pad: [
 		{
-			name: "GL-MT3000",
-			image: "/images/device/mt3000.webp",
-			specs: "1000Mbps / 2.5G",
+			name: "HUAWEI MatePad air 2023",
+			image: "/images/device/matepadair2023.webp",
+			specs: "Gray / 8G + 256G",
 			description:
-				"Portable WiFi 6 router suitable for business trips and home use.",
-			link: "https://www.gl-inet.cn/products/gl-mt3000/",
+				"全金属机身浑然一体，天然云母粉经过业界首创幻彩珠光工艺11精密加工,平板中的艺术品.",
+			link: "https://consumer.huawei.com/cn/tablets/matepad-air-2025/",
 		},
 	],
+    PC: [
+		{
+			name: "拯救者y7000p",
+			image: "/images/device/y7000p.webp",
+			specs: "暗夜黑 / i7-13700H / RTX 4060 / 16G + 1T",
+			description:
+				"全新霜刃散热系统，强悍性能释放，支持Fn+Q性能模式切换，专为电竞玩家打造的硬核游戏本.",
+			link: "https://item.lenovo.com.cn/product/1046114.html?key=y7000p/",
+		},
+	],
+smartwatch: [
+		{
+			name: "HUAWEI WATCH Fit 4 ",
+			image: "/images/device/fit4.webp",
+			specs: "Titanium Gray / 46mm",
+			description:
+				"华为WATCH Fit 4 ，采用钛金属表壳，搭配陶瓷表底盖，质感轻盈坚固，彰显非凡品味.",
+			link: "https://consumer.huawei.com/cn/wearables/watch-fit4/",
+		},
+	],
+
 };
+
