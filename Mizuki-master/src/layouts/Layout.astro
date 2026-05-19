@@ -392,8 +392,8 @@ if (siteConfig.font) {
 <script>
 	// 监听全局鼠标按下事件
 	document.addEventListener("mousedown", function (e) {
-		// e.button === 2 代表按下了鼠标右键
-		if (e.button === 2) {
+		// e.button === 0代表按下了鼠标左键
+		if (e.button === 0) {
 			createRipple(e.clientX, e.clientY);
 		}
 	});
