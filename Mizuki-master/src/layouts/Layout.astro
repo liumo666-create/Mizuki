@@ -347,3 +347,87 @@ if (siteConfig.font) {
 <script>
 	import "../scripts/theme-optimizer.js";
 </script>
+<style is:global>
+	/* 水波纹的定位容器 */
+	.ripple-container {
+		position: fixed;
+		pointer-events: none; /* 核心属性：鼠标穿透，保证特效不会遮挡或干扰你原本的网页点击 */
+		z-index: 99999;
+		transform: translate(-50%, -50%);
+	}
+
+	/* 单个圆环的样式 */
+	.ripple-ring {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		/* 颜色配置：使用了类似你截图的深邃幽蓝色调 */
+		border: 2px solid rgba(80, 110, 210, 0.7);
+		border-radius: 50%;
+		width: 0;
+		height: 0;
+		opacity: 1;
+		/* 使用 cubic-bezier 让水波扩散的物理节奏更真实：先快后慢 */
+		animation: ripple-expand 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+			forwards;
+	}
+
+	@keyframes ripple-expand {
+		0% {
+			width: 0;
+			height: 0;
+			opacity: 0.8;
+			border-width: 3px;
+		}
+		100% {
+			width: 100px; /* 控制水波纹扩散的最大直径 */
+			height: 100px;
+			opacity: 0;
+			border-width: 1px;
+		}
+	}
+</style>
+
+<script>
+	// 监听全局鼠标按下事件
+	document.addEventListener("mousedown", function (e) {
+		// e.button === 2 代表按下了鼠标右键
+		if (e.button === 2) {
+			createRipple(e.clientX, e.clientY);
+		}
+	});
+
+	/* * 💡 可选开关：
+	 * 默认情况下，右键会弹出浏览器的菜单栏，可能会遮挡水波纹。
+	 * 如果你想在博客里禁用自带的右键菜单，让这个特效更沉浸，
+	 * 可以取消下面这段代码的注释（去掉前面的双斜杠）。
+	 */
+	// document.addEventListener('contextmenu', function(e) {
+	//   e.preventDefault();
+	// });
+
+	function createRipple(x: number, y: number) {
+		// 创建一个隐形的坐标中心
+		const container = document.createElement("div");
+		container.className = "ripple-container";
+		container.style.left = `${x}px`;
+		container.style.top = `${y}px`;
+
+		// 循环创建 3 个圆环，产生水波荡漾的层次感
+		for (let i = 0; i < 3; i++) {
+			const ring = document.createElement("div");
+			ring.className = "ripple-ring";
+			// 让每个圈错开 0.15 秒出现，形成内中外三层扩散
+			ring.style.animationDelay = `${i * 0.15}s`;
+			container.appendChild(ring);
+		}
+
+		document.body.appendChild(container);
+
+		// 动画结束后（约 1.5 秒），将这个节点彻底从 DOM 树中销毁，防止内存泄漏卡顿
+		setTimeout(() => {
+			container.remove();
+		}, 1500);
+	}
+</script>
