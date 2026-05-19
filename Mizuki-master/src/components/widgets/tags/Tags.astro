@@ -48,3 +48,273 @@ const style = Astro.props.style;
 		}
 	</div>
 </WidgetLayout>
+<WidgetLayout
+	name="NBA 实时赛况"
+	id="nba-scores"
+	class={className}
+	style={style}
+>
+	<div class="nba-live-container">
+		<div
+			style="text-align: center; font-size: 0.85rem; color: #888; padding: 10px 0;"
+		>
+			正在连接卫星获取实时信号... 🛰️
+		</div>
+	</div>
+
+	<div class="nba-mvp-container"></div>
+</WidgetLayout>
+
+<style is:global>
+	/* --- 比分部分样式 --- */
+	.score-container {
+		background-color: rgba(128, 128, 128, 0.1);
+		border-radius: 0.75rem;
+		padding: 0.75rem 1rem;
+		margin-top: 0.5rem;
+	}
+	.game-status {
+		font-size: 0.75rem;
+		color: #888;
+		margin-bottom: 0.5rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-align: center;
+	}
+	.team-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.95rem;
+		margin-bottom: 0.4rem;
+		color: var(--text-color, #e0def4);
+	}
+	.team-row:last-child {
+		margin-bottom: 0;
+	}
+	.team-info {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.team-logo {
+		width: 24px;
+		height: 24px;
+		object-fit: contain;
+	}
+	.team-name {
+		font-weight: 500;
+	}
+	.win-row .team-name,
+	.win-row .team-score {
+		font-weight: bold;
+		color: var(--primary);
+	}
+	.team-score {
+		font-variant-numeric: tabular-nums;
+		font-size: 1.1rem;
+	}
+
+	/* --- 今日最佳球员样式 --- */
+	.mvp-card {
+		margin-top: 1.25rem;
+		border-top: 1px dashed rgba(128, 128, 128, 0.2);
+		padding-top: 1rem;
+	}
+	.mvp-title {
+		font-size: 0.75rem;
+		color: var(--primary);
+		font-weight: bold;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin-bottom: 0.75rem;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+	.mvp-box {
+		display: flex;
+		align-items: center;
+		background: linear-gradient(
+			135deg,
+			rgba(128, 128, 128, 0.05) 0%,
+			rgba(128, 128, 128, 0.15) 100%
+		);
+		border-radius: 0.75rem;
+		padding: 0.5rem 0.75rem;
+		gap: 12px;
+		position: relative;
+		overflow: hidden;
+	}
+	.mvp-avatar {
+		width: 60px;
+		height: 60px;
+		object-fit: contain;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+		background-color: rgba(255, 255, 255, 0.03);
+		border-radius: 50%;
+	}
+	.mvp-info {
+		flex: 1;
+	}
+	.mvp-name {
+		font-size: 0.95rem;
+		font-weight: bold;
+		color: var(--text-color, #e0def4);
+	}
+	.mvp-team {
+		font-size: 0.75rem;
+		color: #888;
+		margin-bottom: 0.25rem;
+	}
+	.mvp-stats {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: #c4a7e7; /* 醒目的高亮数据颜色 */
+	}
+</style>
+
+<script is:inline>
+	function fetchNBAData() {
+		const scoreContainers = document.querySelectorAll(
+			".nba-live-container",
+		);
+		const mvpContainers = document.querySelectorAll(".nba-mvp-container");
+		if (scoreContainers.length === 0) return;
+
+		fetch(
+			"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
+		)
+			.then((res) => res.json())
+			.then((data) => {
+				const games = data.events;
+				if (!games || games.length === 0) {
+					scoreContainers.forEach(
+						(c) =>
+							(c.innerHTML =
+								'<div style="text-align:center;color:#888;padding:10px;">今日暂无比赛 😴</div>'),
+					);
+					mvpContainers.forEach((c) => (c.innerHTML = ""));
+					return;
+				}
+
+				// 1. 渲染比分列表
+				let scoreHtml = "";
+				games.slice(0, 3).forEach((game) => {
+					const status = game.status.type.shortDetail;
+					const away = game.competitions[0].competitors.find(
+						(c) => c.homeAway === "away",
+					);
+					const home = game.competitions[0].competitors.find(
+						(c) => c.homeAway === "home",
+					);
+
+					scoreHtml += `
+                        <div class="score-container">
+                            <div class="game-status">${status}</div>
+                            <div class="team-row ${away.winner ? "win-row" : ""}">
+                                <div class="team-info">
+                                    <img src="${away.team.logo}" alt="logo" class="team-logo" />
+                                    <span class="team-name">${away.team.shortDisplayName}</span>
+                                </div>
+                                <span class="team-score">${away.score !== undefined ? away.score : "-"}</span>
+                            </div>
+                            <div class="team-row ${home.winner ? "win-row" : ""}">
+                                <div class="team-info">
+                                    <img src="${home.team.logo}" alt="logo" class="team-logo" />
+                                    <span class="team-name">${home.team.shortDisplayName}</span>
+                                </div>
+                                <span class="team-score">${home.score !== undefined ? home.score : "-"}</span>
+                            </div>
+                        </div>
+                    `;
+				});
+				scoreContainers.forEach((c) => (c.innerHTML = scoreHtml));
+
+				// 2. 挖掘“今日最佳球员”数据
+				try {
+					let bestPlayer = null;
+					let maxScore = 0; // 只要有人得分大于0，就会触发 MVP 卡片
+
+					// 遍历所有队伍，寻找今天的得分王
+					games.forEach((game) => {
+						game.competitions[0].competitors.forEach((team) => {
+							// ESPN 接口里的 team.leaders[0] 通常是得分数据
+							if (
+								team.leaders &&
+								team.leaders.length > 0 &&
+								team.leaders[0].leaders
+							) {
+								const ptsLeader = team.leaders[0].leaders[0];
+								if (ptsLeader) {
+									const currentScore = parseFloat(
+										ptsLeader.value,
+									);
+									if (currentScore > maxScore) {
+										maxScore = currentScore;
+										bestPlayer = {
+											name: ptsLeader.athlete.displayName,
+											avatar:
+												ptsLeader.athlete.headshot ||
+												"https://a.espncdn.com/i/headshots/nba/players/full/unknown.png",
+											team: team.team.abbreviation,
+											statText:
+												ptsLeader.displayValue + " PTS",
+										};
+									}
+								}
+							}
+						});
+					});
+
+					// 如果有人得分了，渲染真实的 MVP 卡片
+					if (bestPlayer && maxScore > 0) {
+						const mvpHtml = `
+                            <div class="mvp-card">
+                                <div class="mvp-title">🔥 今日最佳表现</div>
+                                <div class="mvp-box">
+                                    <img src="${bestPlayer.avatar}" alt="mvp" class="mvp-avatar" />
+                                    <div class="mvp-info">
+                                        <div class="mvp-name">${bestPlayer.name}</div>
+                                        <div class="mvp-team">TEAM: ${bestPlayer.team}</div>
+                                        <div class="mvp-stats">${bestPlayer.statText}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+						mvpContainers.forEach((c) => (c.innerHTML = mvpHtml));
+					} else {
+						// 🌟 巧思：如果比赛还没开始（得分都是 0），展示一个炫酷的占位卡片！
+						// 这里默认用了东契奇的头像做黑白剪影
+						const previewHtml = `
+                            <div class="mvp-card" style="opacity: 0.6;">
+                                <div class="mvp-title" style="color: #888;">⏳ 比赛尚未打响</div>
+                                <div class="mvp-box" style="filter: grayscale(100%);">
+                                    <img src="https://a.espncdn.com/i/headshots/nba/players/full/3945274.png" alt="mvp" class="mvp-avatar" />
+                                    <div class="mvp-info">
+                                        <div class="mvp-name" style="color: #888;">球员热身中...</div>
+                                        <div class="mvp-team">TEAM: TBA</div>
+                                        <div class="mvp-stats" style="color: #888;">等待跳球开场</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+						mvpContainers.forEach(
+							(c) => (c.innerHTML = previewHtml),
+						);
+					}
+				} catch (e) {
+					console.error("解析最佳球员失败:", e);
+				}
+			})
+			.catch((err) => {
+				scoreContainers.forEach(
+					(c) =>
+						(c.innerHTML = `<div style="text-align:center;color:#ff6b6b;font-size:12px;padding:10px;">数据刷新失败</div>`),
+				);
+			});
+	}
+
+	setTimeout(fetchNBAData, 1000);
+	setInterval(fetchNBAData, 60000);
+</script>
