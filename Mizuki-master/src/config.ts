@@ -91,7 +91,8 @@ export const siteConfig: SiteConfig = {
 	},
 
 	// 日记页面 Memos API 地址，留空则使用静态数据
-	diaryApiUrl: "",
+	diaryApiUrl:
+		"https://memos-latest-yvif.onrender.com/api/v1/memo?creatorId=1",
 
 	// 文章列表布局配置
 	postListLayout: {
