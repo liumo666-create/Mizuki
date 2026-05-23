@@ -92,7 +92,7 @@ export const siteConfig: SiteConfig = {
 
 	// 日记页面 Memos API 地址，留空则使用静态数据
 	diaryApiUrl:
-		"https://memos-latest-yvif.onrender.com/api/v1/memo?creatorId=1&limit=100&offset=0&sort=createdAt&order=desc", // 替换为你的 Memos API 地址，确保 CORS 已正确配置以允许跨域请求
+		"https://memos-latest-yvif.onrender.com/api/v1/memos?creatorId=1",
 
 	// 文章列表布局配置
 	postListLayout: {
