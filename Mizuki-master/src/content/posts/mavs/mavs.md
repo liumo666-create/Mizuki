@@ -1,6 +1,7 @@
 ---
 title: 绝地反击的牛仔：达拉斯独行侠队（Dallas Mavericks）
 published: 2026-05-18
+image: ./cover.webp
 tags:
   - 篮球
   - NBA

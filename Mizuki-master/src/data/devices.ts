@@ -17,10 +17,9 @@ export const devicesData: DeviceCategory = {
 	Phone: [
 		{
 			name: "VIVO X200 Pro",
-			image: "/images/device/x200pro.png",
+			image: "/images/device/x200pro.webp",
 			specs: "White / 16G + 512G",
-			description:
-				"ZEISS Image. Go Far..",
+			description: "ZEISS Image. Go Far..",
 			link: "https://www.vivo.com/en/products/x200-pro",
 		},
 	],
@@ -34,7 +33,7 @@ export const devicesData: DeviceCategory = {
 			link: "https://consumer.huawei.com/cn/tablets/matepad-air-2025/",
 		},
 	],
-    PC: [
+	PC: [
 		{
 			name: "拯救者y7000p",
 			image: "/images/device/y7000p.webp",
@@ -44,7 +43,7 @@ export const devicesData: DeviceCategory = {
 			link: "https://item.lenovo.com.cn/product/1046114.html?key=y7000p/",
 		},
 	],
-smartwatch: [
+	smartwatch: [
 		{
 			name: "HUAWEI WATCH Fit 4 ",
 			image: "/images/device/fit4.webp",
@@ -54,6 +53,4 @@ smartwatch: [
 			link: "https://consumer.huawei.com/cn/wearables/watch-fit4/",
 		},
 	],
-
 };
-
