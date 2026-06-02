@@ -48,6 +48,7 @@ export const siteConfig: SiteConfig = {
 		timeline: true, // 时间线页面开关
 		albums: true, // 相册页面开关
 		devices: true, // 设备页面开关
+		musicWall: true, // 音乐墙页面开关
 	},
 
 	// 顶栏标题配置
@@ -368,6 +369,11 @@ export const navBarConfig: NavBarConfig = {
 					name: "Timeline",
 					url: "/timeline/",
 					icon: "material-symbols:timeline",
+				},
+				{
+					name: "Music Wall",
+					url: "/music-wall/",
+					icon: "material-symbols:music-note",
 				},
 			],
 		},

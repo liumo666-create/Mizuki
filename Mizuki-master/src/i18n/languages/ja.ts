@@ -269,6 +269,10 @@ export const ja: Translation = {
 	[Key.timelineStartDate]: "開始日",
 	[Key.timelineDuration]: "期間",
 
+	// ミュージック ウォール ページ
+	[Key.musicWall]: "ミュージックウォール",
+	[Key.musicWallSubtitle]: "私の私的な音楽コレクション",
+
 	// パスワード保護
 	[Key.passwordProtected]: "パスワードで保護されています",
 	[Key.passwordProtectedTitle]:

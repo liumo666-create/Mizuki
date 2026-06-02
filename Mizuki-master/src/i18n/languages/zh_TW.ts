@@ -251,6 +251,10 @@ export const zh_TW: Translation = {
 	[Key.timelineStartDate]: "開始日期",
 	[Key.timelineDuration]: "持續時間",
 
+	// 音樂牆頁面
+	[Key.musicWall]: "音樂牆",
+	[Key.musicWallSubtitle]: "我的私人音樂收藏",
+
 	// 其他
 	[Key.noData]: "暫無資料",
 

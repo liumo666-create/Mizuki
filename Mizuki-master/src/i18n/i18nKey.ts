@@ -208,6 +208,10 @@ enum I18nKey {
 	timelineStartDate = "timelineStartDate",
 	timelineDuration = "timelineDuration",
 
+	// Music Wall page
+	musicWall = "musicWall",
+	musicWallSubtitle = "musicWallSubtitle",
+
 	// 密码保护
 	passwordProtected = "passwordProtected",
 	passwordProtectedTitle = "passwordProtectedTitle",

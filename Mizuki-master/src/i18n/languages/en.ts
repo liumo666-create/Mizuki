@@ -267,6 +267,10 @@ export const en: Translation = {
 	[Key.timelineStartDate]: "Start Date",
 	[Key.timelineDuration]: "Duration",
 
+	// Music Wall Page
+	[Key.musicWall]: "Music Wall",
+	[Key.musicWallSubtitle]: "My Private Music Collection",
+
 	// Password Protection
 	[Key.passwordProtected]: "Password Protected",
 	[Key.passwordProtectedTitle]: "This content is password protected",

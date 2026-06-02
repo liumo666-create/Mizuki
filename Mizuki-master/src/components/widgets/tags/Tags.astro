@@ -66,20 +66,37 @@ const style = Astro.props.style;
 </WidgetLayout>
 
 <style is:global>
+	/* 🌟 核心魔法：定义日间/夜间双轨制颜色变量 */
+	:root {
+		--nba-text-main: #333333; /* 白天模式：深色主文本 */
+		--nba-text-sub: #666666; /* 白天模式：深灰色副文本 */
+		--nba-highlight: #7c3aed; /* 白天模式：深紫色高亮数据 */
+		--nba-card-bg: rgba(0, 0, 0, 0.04); /* 白天模式：极浅灰底色 */
+	}
+	/* 捕捉夜间模式的触发信号 */
+	html.dark {
+		--nba-text-main: #e0def4; /* 夜间模式：浅色主文本 */
+		--nba-text-sub: #a1a1aa; /* 夜间模式：浅灰色副文本 */
+		--nba-highlight: #c4a7e7; /* 夜间模式：浅紫色高亮数据 */
+		--nba-card-bg: rgba(255, 255, 255, 0.06); /* 夜间模式：透明白底色 */
+	}
+
 	/* --- 比分部分样式 --- */
 	.score-container {
-		background-color: rgba(128, 128, 128, 0.1);
+		background-color: var(--nba-card-bg);
 		border-radius: 0.75rem;
 		padding: 0.75rem 1rem;
 		margin-top: 0.5rem;
+		transition: background-color 0.3s ease; /* 增加平滑切换动画 */
 	}
 	.game-status {
 		font-size: 0.75rem;
-		color: #888;
+		color: var(--nba-text-sub);
 		margin-bottom: 0.5rem;
 		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-align: center;
+		transition: color 0.3s ease;
 	}
 	.team-row {
 		display: flex;
@@ -87,7 +104,8 @@ const style = Astro.props.style;
 		align-items: center;
 		font-size: 0.95rem;
 		margin-bottom: 0.4rem;
-		color: var(--text-color, #e0def4);
+		color: var(--nba-text-main); /* 👈 让主文字自适应黑白 */
+		transition: color 0.3s ease;
 	}
 	.team-row:last-child {
 		margin-bottom: 0;
@@ -108,7 +126,7 @@ const style = Astro.props.style;
 	.win-row .team-name,
 	.win-row .team-score {
 		font-weight: bold;
-		color: var(--primary);
+		color: var(--primary); /* 这个绿色不受影响，白天黑夜都好看 */
 	}
 	.team-score {
 		font-variant-numeric: tabular-nums;
@@ -137,8 +155,8 @@ const style = Astro.props.style;
 		align-items: center;
 		background: linear-gradient(
 			135deg,
-			rgba(128, 128, 128, 0.05) 0%,
-			rgba(128, 128, 128, 0.15) 100%
+			var(--nba-card-bg) 0%,
+			rgba(128, 128, 128, 0.1) 100%
 		);
 		border-radius: 0.75rem;
 		padding: 0.5rem 0.75rem;
@@ -150,8 +168,8 @@ const style = Astro.props.style;
 		width: 60px;
 		height: 60px;
 		object-fit: contain;
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-		background-color: rgba(255, 255, 255, 0.03);
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+		background-color: rgba(128, 128, 128, 0.05);
 		border-radius: 50%;
 	}
 	.mvp-info {
@@ -160,17 +178,20 @@ const style = Astro.props.style;
 	.mvp-name {
 		font-size: 0.95rem;
 		font-weight: bold;
-		color: var(--text-color, #e0def4);
+		color: var(--nba-text-main); /* 👈 让文班亚马的名字也能自适应黑白 */
+		transition: color 0.3s ease;
 	}
 	.mvp-team {
 		font-size: 0.75rem;
-		color: #888;
+		color: var(--nba-text-sub);
 		margin-bottom: 0.25rem;
+		transition: color 0.3s ease;
 	}
 	.mvp-stats {
 		font-size: 0.85rem;
 		font-weight: 600;
-		color: #c4a7e7; /* 醒目的高亮数据颜色 */
+		color: var(--nba-highlight); /* 👈 替换了原本失效的紫色 */
+		transition: color 0.3s ease;
 	}
 </style>
 

@@ -212,6 +212,10 @@ export const zh_CN: Translation = {
 	[Key.timelineStartDate]: "开始日期",
 	[Key.timelineDuration]: "持续时间",
 
+	// 音乐墙页面
+	[Key.musicWall]: "音乐墙",
+	[Key.musicWallSubtitle]: "我的私人音乐收藏",
+
 	// 密码保护
 	[Key.passwordProtected]: "密码保护",
 	[Key.passwordProtectedTitle]: "此内容受密码保护",

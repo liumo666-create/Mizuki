@@ -1,0 +1,632 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>3D 微曲面鱼眼音乐墙 (终极交互版)</title>
+		<style>
+			:root {
+				--glass-bg: rgba(20, 20, 25, 0.6);
+				--glass-border: rgba(255, 255, 255, 0.2);
+				--text-main: rgba(255, 255, 255, 0.95);
+				--text-sub: rgba(255, 255, 255, 0.6);
+				--card-width: 140px;
+				--card-height: 200px;
+			}
+
+			body,
+			html {
+				margin: 0;
+				padding: 0;
+				width: 100vw;
+				height: 100vh;
+				overflow: hidden;
+				background-color: #000;
+				font-family:
+					-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+					Helvetica, Arial, sans-serif;
+				user-select: none;
+				perspective: 1200px;
+			}
+
+			#background {
+				position: fixed;
+				top: -10%;
+				left: -10%;
+				width: 120%;
+				height: 120%;
+				background-size: cover;
+				background-position: center;
+				filter: blur(25px) brightness(0.5);
+				z-index: 1;
+				transition: background-image 0.5s ease;
+			}
+
+			#scene-container {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 0;
+				height: 0;
+				transform-style: preserve-3d;
+				z-index: 10;
+				transform: translate3d(0, 0, 0);
+				will-change: transform;
+			}
+
+			.player-card {
+				position: absolute;
+				top: calc(-1 * var(--card-height) / 2);
+				left: calc(-1 * var(--card-width) / 2);
+				width: var(--card-width);
+				height: var(--card-height);
+				background: var(--glass-bg);
+				border: 1px solid var(--glass-border);
+				border-radius: 16px;
+				padding: 12px;
+				box-sizing: border-box;
+				display: flex;
+				flex-direction: column;
+				box-shadow:
+					0 4px 15px rgba(0, 0, 0, 0.3),
+					inset 0 1px 0 rgba(255, 255, 255, 0.1);
+				contain: layout style paint;
+				will-change: transform;
+				filter: brightness(0.8) blur(1px);
+				opacity: 0.9;
+				transition:
+					filter 0.3s ease,
+					opacity 0.3s ease,
+					box-shadow 0.3s ease;
+				cursor: pointer;
+				backface-visibility: hidden;
+			}
+
+			.player-card.in-focus {
+				backdrop-filter: blur(4px);
+				-webkit-backdrop-filter: blur(4px);
+				filter: brightness(1.2) blur(0px);
+				opacity: 1;
+				box-shadow:
+					0 15px 50px rgba(0, 0, 0, 0.8),
+					inset 0 1px 0 rgba(255, 255, 255, 0.3);
+			}
+
+			.player-card.is-playing {
+				box-shadow:
+					0 0 35px rgba(30, 215, 96, 0.5),
+					inset 0 1px 0 rgba(255, 255, 255, 0.3);
+				border-color: rgba(30, 215, 96, 0.6);
+			}
+
+			.cover-wrapper {
+				width: 100%;
+				aspect-ratio: 1 / 1;
+				border-radius: 10px;
+				overflow: hidden;
+				margin-bottom: 12px;
+				box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+				position: relative;
+			}
+
+			.cover-img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				pointer-events: none;
+			}
+
+			/* 核心 UX 优化：悬浮在封面正中央的巨型播放按钮 */
+			.cover-play-btn {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%) scale(0.8);
+				width: 48px;
+				height: 48px;
+				background: rgba(0, 0, 0, 0.6);
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				opacity: 0;
+				transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+				backdrop-filter: blur(4px);
+				/* 防止按钮拦截点击，让外层的 card 统一处理点击事件 */
+				pointer-events: none;
+			}
+
+			.player-card.in-focus .cover-play-btn {
+				opacity: 1;
+				transform: translate(-50%, -50%) scale(1);
+			}
+
+			.player-card.is-playing .cover-play-btn {
+				opacity: 1;
+				transform: translate(-50%, -50%) scale(1);
+				background: rgba(30, 215, 96, 0.9);
+			}
+
+			.cover-play-btn svg {
+				fill: #fff;
+				width: 24px;
+				height: 24px;
+				margin-left: 2px; /* 播放图标视觉居中补偿 */
+			}
+
+			.player-card.is-playing .cover-play-btn svg {
+				margin-left: 0; /* 暂停图标是对称的，无需补偿 */
+			}
+
+			.info-area {
+				flex-grow: 1;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				overflow: hidden;
+			}
+
+			.song-title {
+				color: var(--text-main);
+				font-size: 13px;
+				font-weight: 600;
+				margin: 0 0 4px 0;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.artist-name {
+				color: var(--text-sub);
+				font-size: 11px;
+				margin: 0;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.progress-bar {
+				width: 100%;
+				height: 3px;
+				background: rgba(255, 255, 255, 0.15);
+				border-radius: 2px;
+				margin-top: 10px;
+				position: relative;
+				overflow: hidden;
+			}
+
+			.progress-fill {
+				position: absolute;
+				top: 0;
+				left: 0;
+				height: 100%;
+				background: #1ed760;
+				width: 0%;
+				border-radius: 2px;
+				transition: width 0.1s linear;
+			}
+
+			/* --- 恢复控制栏 UI --- */
+			.controls {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-top: 10px;
+				padding: 0 4px;
+			}
+
+			.ctrl-btn {
+				background: none;
+				border: none;
+				padding: 4px;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				opacity: 0.7;
+				transition:
+					opacity 0.2s,
+					transform 0.1s;
+			}
+
+			.ctrl-btn:hover {
+				opacity: 1;
+				transform: scale(1.1);
+			}
+
+			.ctrl-btn svg {
+				fill: #fff;
+				width: 14px;
+				height: 14px;
+				pointer-events: none;
+			}
+
+			.ctrl-btn.play svg {
+				width: 20px;
+				height: 20px;
+			}
+
+			/* 播放时图标变绿联动 */
+			.player-card.is-playing .ctrl-btn.play svg {
+				fill: #1ed760;
+			}
+
+			#info-panel {
+				position: fixed;
+				bottom: 30px;
+				left: 30px;
+				background: rgba(0, 0, 0, 0.6);
+				backdrop-filter: blur(10px);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				color: white;
+				padding: 15px 20px;
+				border-radius: 12px;
+				z-index: 200;
+				font-size: 12px;
+				line-height: 1.6;
+				max-width: 300px;
+				pointer-events: none;
+				box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+			}
+			#info-panel h3 {
+				margin: 0 0 8px 0;
+				font-size: 14px;
+				color: #1ed760;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="background"></div>
+		<div id="scene-container"></div>
+
+		<div id="info-panel">
+			<h3>💡 系统提示</h3>
+			<div>
+				已修复穿模遮挡问题。<br />
+				现在请将鼠标悬停在卡片<strong>中心位置</strong>，直接<strong>点击整张卡片</strong>即可丝滑控制播放。
+			</div>
+		</div>
+
+		<script>
+			const CONFIG = {
+				backgroundImage:
+					"https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2000&auto=format&fit=crop",
+				curveRadius: 2200,
+				rows: 7,
+				cols: 14,
+				spacingX: 160,
+				spacingY: 200, // 减小间距，使墙面更紧凑
+				fisheyeRadius: 400, // 扩大透镜半径，让放大过渡更平滑
+				maxScale: 1.6,
+				// 核心修复1：极大增强突出距离，物理分离重叠的图层
+				maxPopOut: 160,
+				parallaxSensitivity: 0.05,
+			};
+
+			const FISHEYE_RADIUS_SQ =
+				CONFIG.fisheyeRadius * CONFIG.fisheyeRadius;
+			document.getElementById("background").style.backgroundImage =
+				`url(${CONFIG.backgroundImage})`;
+
+			const SVGS = {
+				prev: `<svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>`,
+				play: `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`,
+				pause: `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
+				next: `<svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>`,
+			};
+
+			const globalAudio = new Audio();
+			let currentPlayingCard = null;
+			let currentProgressBar = null;
+			let currentPlayBtn = null;
+
+			globalAudio.addEventListener("timeupdate", () => {
+				if (currentProgressBar && globalAudio.duration) {
+					const percentage =
+						(globalAudio.currentTime / globalAudio.duration) * 100;
+					currentProgressBar.style.width = `${percentage}%`;
+				}
+			});
+
+			globalAudio.addEventListener("ended", () => {
+				if (currentPlayingCard)
+					currentPlayingCard.classList.remove("is-playing");
+				if (currentProgressBar) currentProgressBar.style.width = "0%";
+				if (currentPlayBtn) currentPlayBtn.innerHTML = SVGS.play;
+			});
+
+			const SAMPLE_AUDIO =
+				"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+			// 注意：路径最前面的斜杠 "/" 代表直接从 public 根目录读取，千万不能漏掉！
+			const MOCK_DATA_POOL = [
+				{
+					title: "数钱的女孩",
+					artist: "连麻",
+					cover: "/assets/music-covers/song1.webp",
+					audioUrl: "/assets/music/song1.mp3",
+				},
+				{
+					title: "漫长的季节",
+					artist: "连麻",
+					cover: "/assets/music-covers/song2.webp",
+					audioUrl: "/assets/music/song2.mp3",
+				},
+				{
+					title: "INDUSTRY BABY",
+					artist: "Lil Nas X / Jack Harlow",
+					cover: "/assets/music-covers/song3.webp",
+					audioUrl: "/assets/music/song3.mp3",
+				},
+				{
+					title: "TOOLSIE SLIDE",
+					artist: "Drake",
+					cover: "/assets/music-covers/song4.webp",
+					audioUrl: "/assets/music/song4.mp3",
+				},
+
+				{
+					title: "Attachments",
+					artist: "Pressa / Taliban Glizzy",
+					cover: "/assets/music-covers/song5.webp",
+					audioUrl: "/assets/music/song5.mp3",
+				},
+				{
+					title: "Is There Someone Else?",
+					artist: "The Weeknd",
+					cover: "/assets/music-covers/song6.webp",
+					audioUrl: "/assets/music/song6.mp3",
+				},
+				{
+					title: "苦茶子",
+					artist: "Starling8 / DRODUMANA / FIVESTAR",
+					cover: "/assets/music-covers/song7.webp",
+					audioUrl: "/assets/music/song7.mp3",
+				},
+				{
+					title: "左转灯 (1000 Times +1)",
+					artist: "派伟俊 / mac ova seas",
+					cover: "/assets/music-covers/song8.webp",
+					audioUrl: "/assets/music/song8.mp3",
+				},
+				{
+					title: "我爱你但是我要回家",
+					artist: "ET / Happer / 无面小生 / 口古口古",
+					cover: "/assets/music-covers/song9.webp",
+					audioUrl: "/assets/music/song9.mp3",
+				},
+			];
+
+			const scene = document.getElementById("scene-container");
+			let cardElementsData = [];
+
+			const PARALLAX_SENSITIVITY = CONFIG.parallaxSensitivity;
+			const MAX_SCALE_MINUS_1 = CONFIG.maxScale - 1;
+			const MAX_POP_OUT = CONFIG.maxPopOut;
+			const FISHEYE_RADIUS = CONFIG.fisheyeRadius;
+			const HALF_PI = Math.PI / 2;
+
+			function createCards(dataPool) {
+				const { rows, cols, spacingX, spacingY, curveRadius } = CONFIG;
+				let cardIndex = 0;
+				const fragment = document.createDocumentFragment();
+
+				for (let i = 0; i < rows; i++) {
+					for (let j = 0; j < cols; j++) {
+						const song = dataPool[cardIndex % dataPool.length];
+
+						const card = document.createElement("div");
+						card.className = "player-card";
+						card.innerHTML = `
+                        <div class="cover-wrapper">
+                            <img src="${song.cover}" class="cover-img" alt="cover">
+                        </div>
+                        <div class="info-area">
+                            <h4 class="song-title">${song.title}</h4>
+                            <p class="artist-name">${song.artist}</p>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="controls">
+                            <button class="ctrl-btn prev">${SVGS.prev}</button>
+                            <button class="ctrl-btn play js-play-btn">${SVGS.play}</button>
+                            <button class="ctrl-btn next">${SVGS.next}</button>
+                        </div>
+                    `;
+
+						const progressFill =
+							card.querySelector(".progress-fill");
+						const playBtn = card.querySelector(".js-play-btn");
+
+						// 将点击事件完全绑定在卡片本体上
+						card.addEventListener("click", (e) => {
+							e.stopPropagation();
+							if (!song.audioUrl) return;
+
+							if (currentPlayingCard === card) {
+								if (globalAudio.paused) {
+									const playPromise = globalAudio.play();
+									if (playPromise !== undefined) {
+										playPromise.catch((error) => {
+											/* 忽略由于快速切歌导致的播放中断错误 */
+										});
+									}
+									card.classList.add("is-playing");
+									playBtn.innerHTML = SVGS.pause;
+								} else {
+									globalAudio.pause();
+									card.classList.remove("is-playing");
+									playBtn.innerHTML = SVGS.play;
+								}
+							} else {
+								if (currentPlayingCard) {
+									currentPlayingCard.classList.remove(
+										"is-playing",
+									);
+									if (currentProgressBar)
+										currentProgressBar.style.width = "0%";
+									if (currentPlayBtn)
+										currentPlayBtn.innerHTML = SVGS.play;
+								}
+
+								globalAudio.src = song.audioUrl;
+
+								const playPromise = globalAudio.play();
+								if (playPromise !== undefined) {
+									playPromise.catch((error) => {
+										/* 忽略由于快速切歌导致的播放中断错误 */
+									});
+								}
+
+								card.classList.add("is-playing");
+								playBtn.innerHTML = SVGS.pause;
+
+								currentPlayingCard = card;
+								currentProgressBar = progressFill;
+								currentPlayBtn = playBtn;
+							}
+						});
+
+						const baseX = (j - cols / 2 + 0.5) * spacingX;
+						const baseY = (i - rows / 2 + 0.5) * spacingY;
+						const theta = baseX / curveRadius;
+						const phi = baseY / curveRadius;
+						const x = curveRadius * Math.sin(theta);
+						const y = curveRadius * Math.sin(phi);
+						const z =
+							curveRadius * Math.cos(theta) * Math.cos(phi) -
+							curveRadius;
+						const rotateY = theta * (180 / Math.PI);
+						const rotateX = -phi * (180 / Math.PI);
+
+						// 缓存每张卡片的基准 transform 字符串，避免每帧重新拼接
+						const baseTransform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(1)`;
+						card.style.transform = baseTransform;
+
+						cardElementsData.push({
+							el: card,
+							baseX,
+							baseY,
+							x,
+							y,
+							z,
+							rotX: rotateX,
+							rotY: rotateY,
+							baseTransform: baseTransform,
+							isDirty: false,
+							inFocus: false,
+						});
+
+						fragment.appendChild(card);
+						cardIndex++;
+					}
+				}
+				scene.innerHTML = "";
+				scene.appendChild(fragment);
+			}
+
+			let mouseX = window.innerWidth / 2,
+				mouseY = window.innerHeight / 2;
+			let targetSceneTransX = 0,
+				targetSceneTransY = 0,
+				targetSceneRotX = 0,
+				targetSceneRotY = 0;
+			let currentSceneTransX = 0,
+				currentSceneTransY = 0,
+				currentSceneRotX = 0,
+				currentSceneRotY = 0;
+
+			document.addEventListener("mousemove", (e) => {
+				mouseX = e.clientX;
+				mouseY = e.clientY;
+				const nx = (e.clientX / window.innerWidth) * 2 - 1;
+				const ny = -(e.clientY / window.innerHeight) * 2 + 1;
+				targetSceneTransX = nx * -60;
+				targetSceneTransY = -ny * -60;
+				targetSceneRotY = nx * 2;
+				targetSceneRotX = ny * 2;
+			});
+
+			const cardsLen = 0; // 在 createCards 后更新
+
+			function animate() {
+				// 场景视差平滑
+				currentSceneTransX +=
+					(targetSceneTransX - currentSceneTransX) *
+					PARALLAX_SENSITIVITY;
+				currentSceneTransY +=
+					(targetSceneTransY - currentSceneTransY) *
+					PARALLAX_SENSITIVITY;
+				currentSceneRotX +=
+					(targetSceneRotX - currentSceneRotX) * PARALLAX_SENSITIVITY;
+				currentSceneRotY +=
+					(targetSceneRotY - currentSceneRotY) * PARALLAX_SENSITIVITY;
+
+				scene.style.transform = `translate3d(${currentSceneTransX}px, ${currentSceneTransY}px, 0) rotateX(${currentSceneRotX}deg) rotateY(${currentSceneRotY}deg)`;
+
+				// 每帧缓存窗口半尺寸，避免重复除法
+				const halfW = window.innerWidth * 0.5;
+				const halfH = window.innerHeight * 0.5;
+				const virtualMouseX = mouseX - halfW - currentSceneTransX;
+				const virtualMouseY = mouseY - halfH - currentSceneTransY;
+
+				const data = cardElementsData;
+				const len = data.length;
+
+				for (let i = 0; i < len; i++) {
+					const item = data[i];
+					const dx = item.baseX - virtualMouseX;
+					const dy = item.baseY - virtualMouseY;
+					const distSq = dx * dx + dy * dy;
+
+					if (distSq > FISHEYE_RADIUS_SQ) {
+						if (item.isDirty) {
+							// 使用缓存的基准 transform，零字符串拼接
+							item.el.style.transform = item.baseTransform;
+							item.el.style.zIndex = "10";
+							if (item.inFocus) {
+								item.el.classList.remove("in-focus");
+								item.inFocus = false;
+							}
+							item.isDirty = false;
+						}
+						continue;
+					}
+
+					const dist = Math.sqrt(distSq);
+					const normalizedDist = dist / FISHEYE_RADIUS;
+
+					const intensity = Math.pow(
+						Math.cos(normalizedDist * HALF_PI),
+						3,
+					);
+
+					const currentRotX = item.rotX * (1 - intensity);
+					const currentRotY = item.rotY * (1 - intensity);
+
+					const scale = 1 + MAX_SCALE_MINUS_1 * intensity;
+					const popOut = MAX_POP_OUT * intensity;
+
+					// |0 替代 Math.round，性能更高且结果相同
+					item.el.style.zIndex = (100 + intensity * 100) | 0;
+
+					item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, ${item.z + popOut}px) rotateY(${currentRotY}deg) rotateX(${currentRotX}deg) scale(${scale})`;
+
+					if (!item.inFocus) {
+						item.el.classList.add("in-focus");
+						item.inFocus = true;
+					}
+					item.isDirty = true;
+				}
+				requestAnimationFrame(animate);
+			}
+
+			function initWall(data) {
+				createCards(data);
+				animate();
+			}
+
+			initWall(MOCK_DATA_POOL);
+		</script>
+	</body>
+</html>

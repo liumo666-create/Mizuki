@@ -54,4 +54,9 @@ export const LinkPresets: Record<LinkPreset, NavBarLink> = {
 		url: "/timeline/",
 		icon: "material-symbols:timeline",
 	},
+	[LinkPreset.MusicWall]: {
+		name: i18n(I18nKey.musicWall),
+		url: "/music-wall/",
+		icon: "material-symbols:music-note",
+	},
 };
